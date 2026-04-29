@@ -1,160 +1,193 @@
-// 1. Seleção de Elementos
 const input = document.getElementById('taskInput');
-const button = document.getElementById('addTaskBtn');
+const dateInput = document.getElementById('taskDate');
+const durationInput = document.getElementById('taskDuration');
 const list = document.getElementById('taskList');
-const countDisplay = document.getElementById('count');
-const clearBtn = document.getElementById('clearAll');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
 const themeBtn = document.getElementById('themeToggle');
-const dateDisplay = document.getElementById('currentDate');
 
-// 2. Data Atual
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-const today = new Date();
-if(dateDisplay) dateDisplay.innerText = today.toLocaleDateString('pt-BR', options);
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
 
-// 3. Eventos
-document.addEventListener('DOMContentLoaded', getTasks);
-button.addEventListener('click', addTask);
-
-input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addTask();
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    getTasks();
+    renderCalendar(); // Renderiza o calendário em segundo plano
+    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('pt-BR', options);
 });
 
-themeBtn.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    themeBtn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌓';
-});
+themeBtn.addEventListener('click', () => document.body.classList.toggle('dark-mode'));
 
-clearBtn.addEventListener('click', () => {
-    if(confirm("Deseja apagar tudo?")) {
-        list.innerHTML = '';
-        localStorage.clear();
-        updateCount();
-    }
-});
-
-// 4. Funções
-function addTask() {
-    const taskText = input.value;
-    if (taskText.trim() === '') return;
-    createTag(taskText);
-    saveLocalTasks(taskText);
-    updateCount();
-    input.value = '';
-    input.focus();
-}
-
-function createTag(taskText) {
-    const li = document.createElement('li');
+// NAVEGAÇÃO DE ABAS
+window.switchTab = function(tab) {
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('calendarView').style.display = 'none';
     
-    // Criamos uma estrutura que facilita a edição
+    document.getElementById(tab + 'View').style.display = 'block';
+    
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab + 'TabBtn').classList.add('active');
+    
+    if (tab === 'calendar') {
+        renderCalendar();
+    }
+};
+
+// ADICIONAR TAREFA
+function addTask() {
+    const text = input.value.trim();
+    const date = dateInput.value;
+    const duration = durationInput.value.trim();
+    if (!text || !date) return alert("Preencha a tarefa e a data!");
+
+    const task = { text, date, duration, completed: false, id: Date.now() };
+    saveLocalTasks(task);
+    
+    // Atualiza a interface sem recarregar a página
+    list.innerHTML = '';
+    getTasks();
+    
+    input.value = ''; dateInput.value = ''; durationInput.value = '';
+    updateProgress();
+}
+
+document.getElementById('addTaskBtn').onclick = addTask;
+
+function createTag(task) {
+    const li = document.createElement('li');
     li.innerHTML = `
-        <span class="task-text">${taskText}</span>
-        <div class="actions">
-            <button class="edit-btn">Editar</button>
-            <button class="delete-btn">Excluir</button>
+        <div>
+            <span class="task-text ${task.completed ? 'completed' : ''}" onclick="toggleTask(${task.id})">${task.text}</span>
+            <br><small style="font-size:0.6rem; opacity:0.6;">📅 ${task.date} | ⏳ ${task.duration || 'N/A'}</small>
         </div>
+        <button onclick="deleteTask(${task.id})" style="background:none; border:none; color:#b05a5a; cursor:pointer; font-size:0.6rem;">APAGAR</button>
     `;
-
-    const span = li.querySelector('.task-text');
-    const editBtn = li.querySelector('.edit-btn');
-    const deleteBtn = li.querySelector('.delete-btn');
-
-    // Função de Marcar como Concluída
-    span.addEventListener('click', function() {
-        this.classList.toggle('completed');
-    });
-
-    // --- LÓGICA DE EDIÇÃO ---
-    editBtn.addEventListener('click', function() {
-        if (editBtn.innerText === 'Editar') {
-            // Entrar no modo de edição
-            const currentText = span.innerText;
-            span.innerHTML = `<input type="text" class="edit-input" value="${currentText}">`;
-            const inputEdit = span.querySelector('input');
-            inputEdit.focus();
-            editBtn.innerText = 'Salvar';
-            editBtn.style.color = '#28a745'; // Fica verde ao editar
-        } else {
-            // Salvar a edição
-            const inputEdit = span.querySelector('input');
-            const newText = inputEdit.value;
-            
-            if (newText.trim() !== "") {
-                const oldText = taskText; // Guardamos o texto antigo para atualizar o Storage
-                span.innerText = newText;
-                editBtn.innerText = 'Editar';
-                editBtn.style.color = ''; // Volta ao padrão
-                
-                // Atualizar no "Banco de Dados" (LocalStorage)
-                updateLocalTask(oldText, newText);
-                taskText = newText; // Atualiza a variável local para futuras edições
-            }
-        }
-    });
-
-    // Função de Excluir
-    deleteBtn.addEventListener('click', function() {
-        removeLocalTasks(taskText);
-        li.remove();
-        updateCount();
-    });
-
     list.appendChild(li);
-    updateCount();
 }
 
-function updateCount() {
-    const total = list.querySelectorAll('li').length;
-    if(countDisplay) countDisplay.innerText = total;
+// CALENDÁRIO
+window.changeMonth = function(step) {
+    currentMonth += step;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+};
+
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const monthDisplay = document.getElementById('monthDisplay');
+    if (!grid || !monthDisplay) return;
+    
+    grid.innerHTML = '';
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    monthDisplay.innerText = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date(currentYear, currentMonth));
+
+    for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
+
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayTasks = tasks.filter(t => t.date === dateStr);
+        
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        
+        if (dayTasks.length > 0) {
+            const allDone = dayTasks.every(t => t.completed);
+            dayEl.classList.add(allDone ? 'has-completed' : 'has-open');
+            
+            const badge = document.createElement('span');
+            badge.className = 'task-count-badge';
+            badge.innerText = dayTasks.length;
+            dayEl.appendChild(badge);
+        }
+
+        const dayNumber = document.createElement('span');
+        dayNumber.innerText = d;
+        dayEl.appendChild(dayNumber);
+
+        dayEl.onclick = () => showDayTasks(dateStr);
+        grid.appendChild(dayEl);
+    }
 }
 
-// 5. LocalStorage
-function saveLocalTasks(task) {
-    let tasks = localStorage.getItem('tasks') === null ? [] : JSON.parse(localStorage.getItem('tasks'));
-    tasks.push(task);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+window.showDayTasks = function(date) {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const dayTasks = tasks.filter(t => t.date === date);
+    const popup = document.getElementById('dayTasksView');
+    const dayList = document.getElementById('dayTaskList');
+    
+    // Formata a data para ficar bonita no título do popup
+    const dateObj = new Date(date + 'T00:00:00');
+    const dateFormatted = dateObj.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+    
+    document.getElementById('selectedDayTitle').innerText = dateFormatted;
+
+    // Limpa e preenche a lista
+    dayList.innerHTML = dayTasks.map(t => {
+        // LÓGICA: Só mostra a duração se ela não estiver vazia
+        const durationText = t.duration ? ` — ⏳ ${t.duration}` : "";
+        return `<li class="${t.completed ? 'completed' : ''}">${t.text}${durationText}</li>`;
+    }).join('') || '<li>Nenhuma tarefa para este dia</li>';
+    
+    popup.style.display = 'block';
+};
+
+window.closeDayTasks = function() { 
+    document.getElementById('dayTasksView').style.display = 'none'; 
+};
+
+// AUXILIARES (LÓGICA DE DADOS)
+window.toggleTask = function(id) {
+    let ts = JSON.parse(localStorage.getItem('tasks'));
+    ts.forEach(t => { if(t.id === id) t.completed = !t.completed });
+    localStorage.setItem('tasks', JSON.stringify(ts));
+    
+    // Atualiza as listas sem dar reload
+    list.innerHTML = '';
+    getTasks();
+    renderCalendar();
+};
+
+window.deleteTask = function(id) {
+    let ts = JSON.parse(localStorage.getItem('tasks'));
+    localStorage.setItem('tasks', JSON.stringify(ts.filter(t => t.id !== id)));
+    
+    list.innerHTML = '';
+    getTasks();
+    renderCalendar();
+};
+
+function saveLocalTasks(t) {
+    let ts = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+    ts.push(t);
+    localStorage.setItem('tasks', JSON.stringify(ts));
 }
 
 function getTasks() {
-    let tasks = localStorage.getItem('tasks') === null ? [] : JSON.parse(localStorage.getItem('tasks'));
-    tasks.forEach(task => createTag(task));
+    let ts = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+    ts.forEach(t => createTag(t));
+    updateProgress();
 }
 
-function removeLocalTasks(task) {
-    let tasks = JSON.parse(localStorage.getItem('tasks'));
-    const filteredTasks = tasks.filter(t => t !== task);
-    localStorage.setItem('tasks', JSON.stringify(filteredTasks));
+function updateProgress() {
+    const ts = JSON.parse(localStorage.getItem('tasks')) || [];
+    const done = ts.filter(t => t.completed).length;
+    const perc = ts.length ? Math.round((done / ts.length) * 100) : 0;
+    progressBar.style.width = perc + '%';
+    progressText.innerText = perc + '% concluído';
+    document.getElementById('countDisplay').innerText = ts.length + ' tarefas';
 }
 
-function filterTasks(type) {
-    const allTasks = list.querySelectorAll('li');
-    
-    // Atualiza qual botão está "ativo" visualmente
-    document.querySelectorAll('.filters button').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-
-    allTasks.forEach(li => {
-        const isCompleted = li.querySelector('span').classList.contains('completed');
-        switch(type) {
-            case 'all':
-                li.style.display = 'flex';
-                break;
-            case 'pending':
-                li.style.display = isCompleted ? 'none' : 'flex';
-                break;
-            case 'completed':
-                li.style.display = isCompleted ? 'flex' : 'none';
-                break;
-        }
-    });
-}
-
-function updateLocalTask(oldText, newText) {
-    let tasks = JSON.parse(localStorage.getItem('tasks'));
-    const index = tasks.indexOf(oldText);
-    if (index !== -1) {
-        tasks[index] = newText;
+document.getElementById('clearAll').onclick = () => { 
+    if(confirm("Apagar tudo?")) { 
+        localStorage.clear(); 
+        list.innerHTML = '';
+        updateProgress();
+        renderCalendar();
     }
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
+};
