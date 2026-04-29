@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    background-color: #f4f4f9; /* Esse é o cinza claro original */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -73,4 +73,40 @@ li {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+}.filters {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+}
+.filters button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+}
+.filters button.active {
+    color: #28a745;
+    font-weight: bold;
+}
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+#clearAll {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#clearAll:hover {
+    text-decoration: underline;
 }
