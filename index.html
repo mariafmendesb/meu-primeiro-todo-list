@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
     <button id="themeToggle">🌓</button>
 
     <div class="container">
@@ -30,10 +33,12 @@
             <div class="input-group">
                 <input type="text" id="taskInput" placeholder="O que fazer?">
                 <div class="input-row">
-                    <input type="date" id="taskDate">
-                    <input type="text" id="taskDuration" placeholder="Duração (ex: 2h)">
-                    <button id="addTaskBtn">Adicionar</button>
-                </div>
+    <input type="date" id="taskDate">
+    <input type="date" id="taskEndDate">
+    <input type="time" id="startTime">
+    <input type="time" id="endTime">
+    <button id="addTaskBtn">Adicionar</button>
+</div>
             </div>
             <ul id="taskList"></ul>
         </div>
@@ -54,10 +59,17 @@
         </div>
 
         <div class="footer">
-            <p id="countDisplay">0 tarefas</p>
-            <button id="clearAll">Limpar Tudo</button>
-        </div>
+    <p id="countDisplay">0 tarefas</p>
+    <div class="clear-group">
+        <select id="clearOption">
+            <option value="today">Limpar Hoje</option>
+            <option value="week">Limpar Semana</option>
+            <option value="month">Limpar Mês</option>
+            <option value="all">Limpar TUDO</option>
+        </select>
+        <button id="clearBtn">Limpar</button>
     </div>
+</div>
 
     <script src="script.js"></script>
 </body>
