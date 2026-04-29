@@ -88,6 +88,7 @@ li {
     color: #28a745;
     font-weight: bold;
 }
+/* Ajustando o rodapé para ficar dentro da caixa e bonito */
 .footer {
     display: flex;
     justify-content: space-between;
@@ -95,8 +96,32 @@ li {
     margin-top: 20px;
     padding-top: 15px;
     border-top: 1px solid #eee;
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Deixando os itens da lista (tarefas) mais espaçosos */
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f4f4f4;
+    transition: background 0.2s;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+
+/* Efeito de checkmark moderno */
+li span {
+    cursor: pointer;
+    flex: 1; /* Faz o texto ocupar todo o espaço antes do botão */
+}
+
+li span.completed {
+    color: #bbb;
+    text-decoration: line-through;
 }
 
 #clearAll {
@@ -136,4 +161,129 @@ li:hover {
 
 .delete-btn:hover {
     background-color: #ffe6e6;
+}
+:root {
+    --bg-body: #f4f4f9;
+    --bg-container: #ffffff;
+    --text-color: #333;
+}
+
+body.dark-mode {
+    --bg-body: #1a1a1a;
+    --bg-container: #2d2d2d;
+    --text-color: #f4f4f4;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-color);
+    transition: 0.3s;
+}
+
+.container {
+    background-color: var(--bg-container);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+li {
+    animation: slideIn 0.3s ease-out;
+}
+:root {
+    --bg-body: #f4f4f9;
+    --bg-container: #ffffff;
+    --text-main: #333;
+    --border-color: #eee;
+}
+
+/* Quando o corpo tiver a classe dark-mode, as variáveis mudam de valor */
+body.dark-mode {
+    --bg-body: #121212;
+    --bg-container: #1e1e1e;
+    --text-main: #e0e0e0;
+    --border-color: #333;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    transition: background 0.3s, color 0.3s;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: var(--bg-container);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 380px;
+    transition: background 0.3s;
+}
+
+/* Animação que você enviou */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+li {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+    animation: slideIn 0.3s ease-out; /* Sua animação aqui! */
+}
+
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filters button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.3s;
+}
+
+.filters button.active {
+    color: #28a745;
+    font-weight: bold;
+    border-bottom: 2px solid #28a745;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 0.8rem;
+}
+
+.edit-input {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 1rem;
+    width: 150px;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
 }
