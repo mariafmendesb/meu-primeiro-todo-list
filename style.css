@@ -110,3 +110,30 @@ li {
 #clearAll:hover {
     text-decoration: underline;
 }
+/* Quando a tarefa for clicada, o texto fica riscado e cinza */
+.completed {
+    text-decoration: line-through;
+    color: #888;
+    opacity: 0.6;
+    transition: all 0.3s ease; /* Efeito suave ao clicar */
+}
+
+/* Adicionando um efeito de "hover" nas tarefas para ficar mais profissional */
+li:hover {
+    background-color: #f9f9f9;
+}
+
+/* Deixando o botão de excluir mais bonito */
+.delete-btn {
+    background-color: transparent;
+    color: #ff4d4d;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.delete-btn:hover {
+    background-color: #ffe6e6;
+}

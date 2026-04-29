@@ -1,3 +1,7 @@
+const dateDisplay = document.getElementById('currentDate');
+const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+const today  = new Date();
+dateDisplay.innerText = today.toLocaleDateString('pt-BR', options);
 // 1. Seleção de Elementos (Tudo declarado uma única vez no topo)
 const input = document.getElementById('taskInput');
 const button = document.getElementById('addTaskBtn');
