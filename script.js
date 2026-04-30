@@ -75,8 +75,15 @@ function getTasks() {
     list.innerHTML = '';
     let ts = JSON.parse(localStorage.getItem('tasks')) || [];
     const today = new Date().toISOString().split('T')[0];
-    ts.filter(t => t.date === today).forEach(t => createTag(t));
-    document.getElementById('countDisplay').innerText = `${ts.length} tarefas globais`;
+    
+    // Filtramos as tarefas de hoje
+    const tasksToday = ts.filter(t => t.date === today);
+    
+    // Desenhamos apenas as de hoje
+    tasksToday.forEach(t => createTag(t));
+    
+    // O contador agora mostra apenas a quantidade de tarefas visíveis HOJE
+    document.getElementById('countDisplay').innerText = `${tasksToday.length} tarefas para hoje`;
 }
 
 function createTag(task) {
